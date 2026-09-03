@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 djangorestframework = "*"
+django-cors-headers = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 
