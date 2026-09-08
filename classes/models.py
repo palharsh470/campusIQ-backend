@@ -2,8 +2,6 @@ from django.db import models
 from organizations.models import Organization
 from django.conf import settings
 
-
-
 class Program(models.Model):
     title = models.CharField(max_length=255)
     organization = models.ForeignKey( Organization, on_delete=models.CASCADE, related_name='programs')
@@ -29,6 +27,14 @@ class ClassGroup(models.Model):
         related_name='active_class_groups'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["course", "year", "branch", "section", "organization"],
+                name="unique_class_group_per_program"
+            )
+        ]
 
     def __str__(self):
         return f"{self.course} {self.year} {self.branch} {self.section} ({self.current_program.title})"

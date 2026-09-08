@@ -6,7 +6,7 @@ class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = Program
         fields = ["id", "title", "organization", "description", "duration_weeks", "created_at"]
-        read_only_fields = ["organization", "created_at"]   # id PK hone ki wajah se already read-only hai
+        read_only_fields = ["organization", "created_at"]   
 
 
 class ClassGroupSerializer(serializers.ModelSerializer):
