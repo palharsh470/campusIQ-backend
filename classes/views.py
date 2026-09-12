@@ -30,10 +30,8 @@ class TeacherAssignmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsDirector]
 
     def get_queryset(self):
-        return TeacherAssignment.objects.filter(organization=self.request.user.organization)
+        return TeacherAssignment.objects.filter(teacher__organization=self.request.user.organization)
 
-    def perform_create(self, serializer):
-        serializer.save(organization=self.request.user.organization)
 
 class EnrollmentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EnrollmentSerializer

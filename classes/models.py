@@ -37,7 +37,7 @@ class ClassGroup(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.course} {self.year} {self.branch} {self.section} ({self.current_program.title})"
+        return f"{self.course} {self.year} {self.branch} {self.section} ({self.current_program})"
 
 
 class TeacherAssignment(models.Model):
