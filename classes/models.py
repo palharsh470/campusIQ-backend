@@ -31,8 +31,8 @@ class ClassGroup(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["course", "year", "branch", "section", "organization"],
-                name="unique_class_group_per_program"
+                fields=["course", "year", "branch", "section", "organization", "current_program"],
+                name="unique_class_group"
             )
         ]
 

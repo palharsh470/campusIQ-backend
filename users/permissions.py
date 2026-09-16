@@ -8,3 +8,19 @@ class IsDirector(BasePermission):
             and request.user.is_authenticated
             and request.user.role == request.user.Role.DIRECTOR
         )
+    
+class IsTeacher(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == request.user.Role.TEACHER
+        )
+    
+class IsStudent(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == request.user.Role.STUDENT
+        )

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Program, ClassGroup, TeacherAssignment, Enrollment
 from django.db import transaction
+from users.serializers import UserSerializer
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,12 +11,12 @@ class ProgramSerializer(serializers.ModelSerializer):
 
 
 class ClassGroupSerializer(serializers.ModelSerializer):
-    current_program = ProgramSerializer(read_only = True)
+    current_program_detail = ProgramSerializer(source='current_program', read_only=True)
     assigned_teacher = serializers.SerializerMethodField()
 
     class Meta:
         model = ClassGroup
-        fields = ["id", "course", "year", "branch", "section", "organization", "current_program", "assigned_teacher", "created_at"]
+        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "assigned_teacher", "created_at"]
         read_only_fields = ["organization", "created_at"]
 
     def validate_current_program(self, value):
@@ -32,8 +33,6 @@ class ClassGroupSerializer(serializers.ModelSerializer):
         teacher = assignment.teacher
         full_name = f"{teacher.first_name} {teacher.last_name}".strip()
         return {"id": teacher.id, "name": full_name or teacher.username}
-
-
 
 class TeacherAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,9 +59,13 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
             TeacherAssignment.objects.filter(class_group=class_group).delete()
             return super().create(validated_data)
 
+
+
 class EnrollmentSerializer(serializers.ModelSerializer):
-    class Meta :
+    student = UserSerializer(read_only=True)
+    class_group = ClassGroupSerializer(read_only=True)
+
+    class Meta:
         model = Enrollment
         fields = ["id", "student", "class_group", "enrolled_at"]
         read_only_fields = ["enrolled_at"]
-
