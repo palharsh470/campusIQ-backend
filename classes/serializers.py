@@ -34,7 +34,17 @@ class ClassGroupSerializer(serializers.ModelSerializer):
         full_name = f"{teacher.first_name} {teacher.last_name}".strip()
         return {"id": teacher.id, "name": full_name or teacher.username}
 
+class ClassGroupBasicSerializer(serializers.ModelSerializer):
+     current_program_detail = ProgramSerializer(source='current_program', read_only=True)
+     class Meta:
+        model = ClassGroup
+        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "created_at"]
+        read_only_fields = ["organization", "created_at"]
+    
+
 class TeacherAssignmentSerializer(serializers.ModelSerializer):
+    class_group = ClassGroupBasicSerializer(read_only=True)
+    teacher = UserSerializer(read_only=True)
     class Meta:
         model = TeacherAssignment
         fields = ["id", "class_group", "teacher", "assigned_at"]

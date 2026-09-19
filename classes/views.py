@@ -40,7 +40,7 @@ class TeacherAssignmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsDirector]
 
     def get_queryset(self):
-        return TeacherAssignment.objects.filter(teacher__organization=self.request.user.organization)
+        return TeacherAssignment.objects.filter(teacher__organization=self.request.user.organization).select_related("class_group", "teacher")
 
 
 class EnrollmentViewSet(viewsets.ReadOnlyModelViewSet):

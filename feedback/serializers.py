@@ -55,18 +55,19 @@ class FeedbackCreateSerializer(serializers.Serializer):
         return Feedback.objects.create(**validated_data)
 
 class FeedbackListSerializer(serializers.ModelSerializer):
-    teacher_name = serializers.SerializerMethodField()
-    class_group_label = serializers.SerializerMethodField()
+    class_group = serializers.SerializerMethodField()
     program_title = serializers.CharField(source='program.title', read_only = True)
 
     class Meta :
         model = Feedback
-        fields = ["id", "teacher_name", "class_group_label", "program_title", "subject_knowledge", "doubt_resolution", "teaching_quality", "practical_learning", "comments", "created_at"]
+        fields = ["id", "class_group", "program_title", "subject_knowledge", "doubt_resolution", "teaching_quality", "practical_learning", "comments", "created_at"]
 
-    def get_teacher_name(self, obj):
-        full_name = f"{obj.teacher.first_name} {obj.teacher.last_name}".strip()
-        return full_name or obj.teacher.username
-
-    def get_class_group_label(self, obj):
+    def get_class_group(self, obj):
         cg = obj.class_group
-        return f"{cg.course} Year {cg.year} - {cg.branch} {cg.section}"
+        return {
+            "id": cg.id,
+            "course": cg.course,
+            "year": cg.year,
+            "branch": cg.branch,
+            "section": cg.section,
+        }

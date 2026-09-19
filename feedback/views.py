@@ -20,7 +20,7 @@ class SubmitFeedbackView(generics.CreateAPIView):
         return Response({"detail": "Feedback submitted successfully."}, status=status.HTTP_201_CREATED)
 
 class FeedbackViewSet(viewsets.ModelViewSet):
-    serializer_class = [FeedbackListSerializer]
+    serializer_class = FeedbackListSerializer
     permission_classes = [IsDirector]
 
     def get_queryset(self):
