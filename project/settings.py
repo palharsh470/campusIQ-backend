@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'feedback',
     'assessments',
     'reports',
+    'skills',
     'corsheaders',
 ]
 
