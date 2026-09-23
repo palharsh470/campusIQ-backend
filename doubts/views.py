@@ -4,9 +4,9 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from users.permissions import IsStudent, IsClassParticipant
-from .models import Doubt, DoubtLike, DoubtMessageLike
+from .models import Doubt, DoubtLike, DoubtMessageLike, DoubtMessage
 from .serializers import DoubtCreateSerializer, DoubtListSerializer, DoubtDetailSerializer, DoubtMessageSerializer
-
+from django.db.models import Prefetch
 
 class DoubtViewSet(mixins.CreateModelMixin,
                     mixins.ListModelMixin,
@@ -32,8 +32,11 @@ class DoubtViewSet(mixins.CreateModelMixin,
         if self.action == 'list':
             qs = qs.annotate(reply_count=Count('messages', distinct=True))
         else:
+            message_qs = DoubtMessage.objects.select_related('sender').annotate(
+            like_count=Count('likes', distinct=True)
+            )
             qs = qs.annotate(like_count=Count('likes', distinct=True)).prefetch_related(
-                'messages__sender', 'messages__likes'
+                Prefetch('messages', queryset=message_qs)
             )
 
         if user.role == user.Role.DIRECTOR:
@@ -44,6 +47,10 @@ class DoubtViewSet(mixins.CreateModelMixin,
             qs = qs.filter(class_group__enrollments__student=user)
         else:
             return qs.none()
+
+        class_group_id = self.request.query_params.get('class_group')
+        if class_group_id:
+            qs = qs.filter(class_group_id=class_group_id)   
 
         status_param = self.request.query_params.get('status')
         if status_param:
@@ -111,12 +118,14 @@ class DoubtViewSet(mixins.CreateModelMixin,
     def like_message(self, request, pk=None, message_id=None):
         doubt = self.get_object()
         message = doubt.messages.filter(pk=message_id).first()
+
         if not message :
             return Response({"detail": "Message not found."}, status=404)
 
         like, created = DoubtMessageLike.objects.get_or_create(message=message, user=request.user)
+        
         if not created:
             like.delete()
-
+        
         return Response({"liked": created, "like_count": message.likes.count()})
 

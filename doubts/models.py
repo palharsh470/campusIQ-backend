@@ -10,7 +10,7 @@ class Doubt(models.Model):
         RESOLVED = "RESOLVED", "Resolved"
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE, related_name="doubts")
     lecture = models.ForeignKey(Lecture, on_delete=models.SET_NULL, null=True , blank=True , related_name="doubts")
-    topic = models.ForeignKey(SkillTag, on_delete=models.SET, null=True, blank=True, related_name="doubts")
+    topic = models.ForeignKey(SkillTag, on_delete=models.SET_NULL, null=True, blank=True, related_name="doubts")
     raised_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='doubts_raised')
     title = models.CharField(max_length=255)
     question = models.TextField()
