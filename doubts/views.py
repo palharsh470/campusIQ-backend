@@ -7,6 +7,7 @@ from users.permissions import IsStudent, IsClassParticipant
 from .models import Doubt, DoubtLike, DoubtMessageLike, DoubtMessage
 from .serializers import DoubtCreateSerializer, DoubtListSerializer, DoubtDetailSerializer, DoubtMessageSerializer
 from django.db.models import Prefetch
+from .realtime import broadcast_doubt_event
 
 class DoubtViewSet(mixins.CreateModelMixin,
                     mixins.ListModelMixin,
@@ -67,6 +68,7 @@ class DoubtViewSet(mixins.CreateModelMixin,
         serializer.is_valid(raise_exception=True)
         doubt = serializer.save()
         detail = DoubtDetailSerializer(doubt, context={'request': request})
+        broadcast_doubt_event(doubt.class_group_id, "new_doubt", detail.data)
         return Response(detail.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
@@ -82,7 +84,9 @@ class DoubtViewSet(mixins.CreateModelMixin,
         like, created = DoubtLike.objects.get_or_create(doubt=doubt, user=request.user)
         if not created:
             like.delete()
-        return Response({"liked": created, "like_count": doubt.likes.count()})
+        like_count = doubt.likes.count()
+        broadcast_doubt_event(doubt.class_group_id, "doubt_liked", {"id": doubt.id, "like_count": like_count})
+        return Response({"liked": created, "like_count": like_count})
 
     @action(detail=True, methods=['get','post'])
     def messages(self, request, pk=None):
@@ -95,6 +99,7 @@ class DoubtViewSet(mixins.CreateModelMixin,
         serializer = DoubtMessageSerializer(data = request.data, context = {'request' : request})
         serializer.is_valid(raise_exception=True)
         serializer.save(doubt = doubt, sender = request.user)
+        broadcast_doubt_event(doubt.class_group_id, "new_message", {"doubt_id": doubt.id, **serializer.data})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='messages/(?P<message_id>[^/.]+)/accept')
@@ -112,20 +117,23 @@ class DoubtViewSet(mixins.CreateModelMixin,
         doubt.resolved_at = message.created_at
         doubt.save()
 
-        return Response(DoubtDetailSerializer(doubt, context={'request': request}).data)
+        detail = DoubtDetailSerializer(doubt, context={'request': request})
+        broadcast_doubt_event(doubt.class_group_id, "doubt_resolved", detail.data)
+        return Response(detail.data)
 
     @action(detail=True, methods=['post'], url_path='messages/(?P<message_id>[^/.]+)/like')
     def like_message(self, request, pk=None, message_id=None):
         doubt = self.get_object()
         message = doubt.messages.filter(pk=message_id).first()
-
         if not message :
             return Response({"detail": "Message not found."}, status=404)
 
         like, created = DoubtMessageLike.objects.get_or_create(message=message, user=request.user)
-        
         if not created:
             like.delete()
-        
-        return Response({"liked": created, "like_count": message.likes.count()})
+        like_count = message.likes.count()
+        broadcast_doubt_event(doubt.class_group_id, "message_liked", {
+            "doubt_id": doubt.id, "message_id": message.id, "like_count": like_count,
+        })
+        return Response({"liked": created, "like_count": like_count})
 

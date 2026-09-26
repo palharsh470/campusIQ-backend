@@ -33,7 +33,7 @@ class Doubt(models.Model):
 class DoubtMessage(models.Model):
     doubt = models.ForeignKey(Doubt, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='doubt_messages')
-    text = models.TextField()
+    text = models.TextField(blank = True, null = True)
     attachment = models.ImageField(upload_to='doubt_messages/', null=True, blank=True)
     is_accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
