@@ -12,6 +12,12 @@ class Program(models.Model):
     class Meta:
         unique_together = ('title', 'organization')
 
+    @property
+    def duration_days(self):
+        if not self.duration_weeks:
+            return None
+        return self.duration_weeks * 7
+
     def __str__(self):
         return f"{self.title} ({self.organization.name})"
 
@@ -26,6 +32,7 @@ class ClassGroup(models.Model):
         Program, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='active_class_groups'
     )
+    program_started_at = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

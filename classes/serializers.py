@@ -2,11 +2,12 @@ from rest_framework import serializers
 from .models import Program, ClassGroup, TeacherAssignment, Enrollment
 from django.db import transaction
 from users.serializers import UserSerializer
+from django.utils import timezone
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = Program
-        fields = ["id", "title", "organization", "description", "duration_weeks", "created_at"]
+        fields = ["id", "title", "organization", "description", "duration_weeks","duration_days", "created_at"]
         read_only_fields = ["organization", "created_at"]   
 
 
@@ -16,7 +17,7 @@ class ClassGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassGroup
-        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "assigned_teacher", "created_at"]
+        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "assigned_teacher","program_started_at", "created_at"]
         read_only_fields = ["organization", "created_at"]
 
     def validate_current_program(self, value):
@@ -25,6 +26,16 @@ class ClassGroupSerializer(serializers.ModelSerializer):
             if value.organization_id != director.organization_id:
                 raise serializers.ValidationError("Program does not belong to your organization.")
         return value
+    
+    def update(self, instance, validated_data):
+        program_changing = (
+            'current_program' in validated_data
+            and validated_data['current_program'] != instance.current_program
+        )
+        if program_changing and 'program_started_at' not in validated_data:
+            validated_data['program_started_at'] = timezone.now().date()
+        return super().update(instance, validated_data)
+
 
     def get_assigned_teacher(self, obj):
         assignment = obj.teacher_assignments.select_related('teacher').first()
@@ -38,7 +49,7 @@ class ClassGroupBasicSerializer(serializers.ModelSerializer):
      current_program_detail = ProgramSerializer(source='current_program', read_only=True)
      class Meta:
         model = ClassGroup
-        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "created_at"]
+        fields = ["id", "course", "year", "branch", "section", "organization", "current_program","current_program_detail", "program_started_at", "created_at"]
         read_only_fields = ["organization", "created_at"]
     
 
