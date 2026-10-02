@@ -13,6 +13,7 @@ psycopg = {extras = ["binary"], version = "*"}
 dj-database-url = "*"
 whitenoise = "*"
 daphne = "*"
+channels = "*"
 
 [dev-packages]
 
