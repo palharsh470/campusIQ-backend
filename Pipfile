@@ -12,6 +12,7 @@ python-dotenv = "*"
 psycopg = {extras = ["binary"], version = "*"}
 dj-database-url = "*"
 whitenoise = "*"
+daphne = "*"
 
 [dev-packages]
 
