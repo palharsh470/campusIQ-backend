@@ -9,6 +9,9 @@ django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
 google-genai = "*"
 python-dotenv = "*"
+psycopg = {extras = ["binary"], version = "*"}
+dj-database-url = "*"
+whitenoise = "*"
 
 [dev-packages]
 
