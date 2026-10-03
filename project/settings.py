@@ -29,8 +29,6 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(','
 # SECRET_KEY = 'django-insecure-)eu14h!8bm2lk(z!zqgry=b19iav&!#iye1pamoh16w^5in2a0'
 
 
-ALLOWED_HOSTS = []
-
 
 
 
