@@ -54,11 +54,11 @@ class ClassGroupBasicSerializer(serializers.ModelSerializer):
     
 
 class TeacherAssignmentSerializer(serializers.ModelSerializer):
-    class_group = ClassGroupBasicSerializer(read_only=True)
-    teacher = UserSerializer(read_only=True)
+    class_group_detail = ClassGroupBasicSerializer(source='class_group', read_only=True)
+    teacher_detail = UserSerializer(source='teacher', read_only=True)
     class Meta:
         model = TeacherAssignment
-        fields = ["id", "class_group", "teacher", "assigned_at"]
+        fields = ["id", "class_group","class_group_detail", "teacher","teacher_detail" ,"assigned_at"]
         read_only_fields = ["assigned_at"]
 
     def validate(self, data):
