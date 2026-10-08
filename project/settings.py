@@ -19,17 +19,12 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.7-flash')
 
 import dj_database_url
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-insecure-key-change-in-production')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
-# SECRET_KEY = 'django-insecure-)eu14h!8bm2lk(z!zqgry=b19iav&!#iye1pamoh16w^5in2a0'
-
-
-
 
 
 INSTALLED_APPS = [
@@ -50,6 +45,7 @@ INSTALLED_APPS = [
     'assessments',
     'reports',
     'skills',
+    'announcement',
     'corsheaders',
 ]
 
@@ -96,20 +92,28 @@ ASGI_APPLICATION = "project.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",   
-        conn_max_age=600,
-    )
-}
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+
+if ENVIRONMENT == "production":
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -151,9 +155,15 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 MAILERS = {
-
     'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+        'OPTIONS': {
+            'host': 'smtp.gmail.com',
+            'port': 465,
+            'use_ssl': True,
+            'username': os.environ.get('EMAIL_HOST_USER'),
+            'password': os.environ.get('EMAIL_HOST_PASSWORD'),
+        },
     },
 }
 STORAGES = {

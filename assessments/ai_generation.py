@@ -46,11 +46,15 @@ def generate_questions(content, num_questions, include_skill=False):
     client = get_client()
     prompt = build_prompt(content, num_questions, include_skill)
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config={"response_mime_type": "application/json"},
-    )
+    try:
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=prompt,
+            config={"response_mime_type": "application/json"},
+        )
+    except Exception as e:
+        print(e)
+        return None
 
     questions = json.loads(response.text)
 
@@ -66,3 +70,5 @@ def generate_questions(content, num_questions, include_skill=False):
         raise ValueError("AI didn't return any usable questions.")
 
     return cleaned
+
+
