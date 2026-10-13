@@ -8,16 +8,17 @@ https://docs.djangoproject.com/en/6.1/howto/deployment/asgi/
 """
 
 import os
-
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 django_asgi_app = get_asgi_application()
-
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from project.jwt_auth_middleware import JWTAuthMiddlewareStack
-from doubts.routing import websocket_urlpatterns
+from doubts.routing import websocket_urlpatterns as doubt_ws_urls
+from notifications.routing import websocket_urlpatterns as notification_ws_urls
+
+websocket_urlpatterns = doubt_ws_urls + notification_ws_urls
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,

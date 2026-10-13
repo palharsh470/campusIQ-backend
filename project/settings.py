@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'reports',
     'skills',
     'announcement',
+    'notifications',
     'corsheaders',
 ]
 
@@ -86,6 +87,9 @@ REST_FRAMEWORK = {
     ),
 }
 
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
 WSGI_APPLICATION = 'project.wsgi.application'
 ASGI_APPLICATION = "project.asgi.application"
 
@@ -109,7 +113,8 @@ else:
     }
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.pubsub.RedisPubSubChannelLayer',
+        'CONFIG': {'hosts': ['redis://localhost:6379/1']},
     }
 }
 

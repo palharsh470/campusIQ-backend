@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from users.permissions import IsTeacher
 from rest_framework.response import Response
 from classes.models import ClassGroup, TeacherAssignment
-from django.core.mail import EmailMessage
-from smtplib import SMTPException
 import logging
+from .tasks import send_announcement_email
+from django.db import transaction
 from rest_framework import status
 from .models import Announcement
 
@@ -31,35 +31,21 @@ class SendAssignmentView(APIView) :
         if not TeacherAssignment.objects.filter(teacher=request.user, class_group=class_group).exists():
             return Response({"detail": "You are not assigned to this class."}, status=403)
 
-        student_emails = list(
-            class_group.enrollments.select_related("student").values_list("student__email", flat = True)
-        )
+        if not class_group.enrollments.exists():
+             return Response({"detail": "No students enrolled in this class yet."}, status=400)
 
 
-        if not student_emails:
-            return Response({"detail": "No students enrolled in this class yet."}, status=400)
-
-        try:
-            email = EmailMessage(
-                subject=subject,
-                body=message,
-                to=[],
-                bcc=student_emails,
-            )
-            email.send(fail_silently=False)
-        except SMTPException:
-            logger.exception("Announcement email send failed")
-            return Response(
-                {"detail": "Couldn't send the announcement right now. Please try again."},
-                status=502,
-            )
-
-        Announcement.objects.create(
+        announcement =  Announcement.objects.create(
             teacher=request.user,
             class_group=class_group,
             subject=subject,
             message=message,
-            recipient_count=len(student_emails),
+
         )
 
-        return Response({"sent_to": len(student_emails)}, status=status.HTTP_201_CREATED)
+        transaction.on_commit(lambda: send_announcement_email.delay(announcement.id))
+
+        return Response(
+            {"id": announcement.id, "status": announcement.status},
+            status=status.HTTP_202_ACCEPTED,
+        )
