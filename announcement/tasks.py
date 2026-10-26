@@ -37,7 +37,7 @@ def send_announcement_email(announcement_id):
         notify(
         announcement.teacher,
         Notification.Kind.ERROR,
-        f'Announcement "{announcement.subject}" could not be sent.',
+        f'Class : "{announcement.class_group}" Announcement "{announcement.subject}" could not be sent.',
         )
         return
 
@@ -47,5 +47,5 @@ def send_announcement_email(announcement_id):
     notify(
         announcement.teacher,
         Notification.Kind.SUCCESS,
-        f'Announcement "{announcement.subject}" was sent to {len(student_emails)} students.',
+        f'Class : "{announcement.class_group}" Announcement "{announcement.subject}" was sent to {len(student_emails)} students.',
     )

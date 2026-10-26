@@ -4,7 +4,14 @@ from django.db import transaction
 from organizations.models import Organization
 from classes.models import ClassGroup, Enrollment
 
+class OrganisationSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Organization
+        fields = ["id", "name", "type", "created_at"]
+
 class UserSerializer(serializers.ModelSerializer):
+
+    organization = OrganisationSerializer()
     class Meta:
         model = User
         fields = [
